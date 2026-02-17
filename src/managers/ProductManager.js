@@ -5,26 +5,26 @@ export class ProductManager {
     this.path = path;
   }
 
-  async getAll() {
+  async getAllProducts() {
     const data = await fs.readFile(this.path, "utf-8");
     return JSON.parse(data);
   }
 
   async getById(id) {
-    const products = await this.getAll();
+    const products = await this.getAllProducts();
     return products.find((p) => p.id === id) || null;
   }
 
-  async create(productData) {
-    const products = await this.getAll();
+  async createProduct(productData) {
+    const products = await this.getAllProducts();
 
-    const nextId =
+    const newId =
       products.length === 0
         ? "1"
         : String(Math.max(...products.map((p) => Number(p.id))) + 1);
 
     const newProduct = {
-      id: nextId,
+      id: newId,
       ...productData,
     };
 
@@ -35,13 +35,13 @@ export class ProductManager {
     return newProduct;
   }
 
-  async update(id, updates) {
-    const products = await this.getAll();
+  async updateProduct(id, updates) {
+    const products = await this.getAllProducts();
 
     const index = products.findIndex((p) => p.id === id);
     if (index === -1) return null;
 
-    // No permitir modificar el id
+    // Sin modificar el ID, para evitar que se cambie por error
     const { id: _ignored, ...safeUpdates } = updates;
 
     const updatedProduct = {

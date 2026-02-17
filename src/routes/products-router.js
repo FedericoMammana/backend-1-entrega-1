@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/products/:pid -> trae el producto con el id indicado
+// GET /api/products/:pid -- trae el producto con el id indicado
 router.get("/:pid", async (req, res) => {
   try {
     const { pid } = req.params;
@@ -32,6 +32,7 @@ router.get("/:pid", async (req, res) => {
 });
 
 /// POSTS ///
+
 // POST /api/products  - creo un nuevo producto y lo devuelvo con su id asignado
 router.post("/", async (req, res) => {
   try {
@@ -59,7 +60,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
-    const newProduct = await productManager.create({
+    const newProduct = await productManager.createProduct({
       title,
       description,
       code,
@@ -78,13 +79,13 @@ router.post("/", async (req, res) => {
 
 /// PUTS ///
 
-// put /api/products/:pid  - actualizo un producto por su id y devuelvo el producto actualizado
+// put /api/products/:pid  - Actualizo un producto por su id y devuelvo el producto actualizado
 
 router.put("/:pid", async (req, res) => {
   try {
     const { pid } = req.params;
 
-    const updatedProduct = await productManager.update(pid, req.body);
+    const updatedProduct = await productManager.updateProduct(pid, req.body);
 
     if (!updatedProduct) {
       return res.status(404).json({ message: "Producto no encontrado" });
@@ -96,17 +97,19 @@ router.put("/:pid", async (req, res) => {
   }
 });
 
+/// DELETES ///
+
 router.delete("/:pid", async (req, res) => {
   try {
     const { pid } = req.params;
 
-    const deleted = await productManager.delete(pid);
+    const deleted = await productManager.deleteProduct(pid);
 
     if (!deleted) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
 
-    return res.status(200).json({ message: "Product deleted" });
+    return res.status(200).json({ message: "Producto eliminado" });
   } catch (error) {
     return res.status(500).json({ message: "Error eliminando producto" });
   }

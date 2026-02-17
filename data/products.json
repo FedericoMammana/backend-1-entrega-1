@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "title": "Producto de prueba",
+    "description": "Descripción del producto",
+    "code": "ABC123",
+    "price": 999.99,
+    "status": true,
+    "stock": 10,
+    "category": "categoria",
+    "thumbnails": ["https://ejemplo.com/imagen.jpg"]
+  }
+]
