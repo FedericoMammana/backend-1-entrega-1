@@ -1,50 +1,55 @@
 import { Router } from "express";
-import { cartsManager } from "../managers/CartManager.js";
-import { ProductManager } from "../managers/ProductManager.js";
-
+import { cartManager } from "../managers/CartManager.js";
+import { productManager } from "../managers/ProductManager.js";
 const router = Router();
-//Ruta para crear un nuevo carrito
+
+// POST /api/carts - creo un nuevo carrito y lo devuelvo
 router.post("/", async (req, res) => {
   try {
-    const newCart = await cartsManager.addCart();
-    res.status(201).json(newCart);
+    const newCart = await cartManager.create();
+    return res.status(201).json(newCart);
   } catch (error) {
-    res.status(500).json({ error: "Error al crear el carrito" });
+    return res.status(500).json({ message: "Error creando carrito" });
   }
 });
-
-// Ruta para agregar un producto a un carrito específico
+// POST /api/carts/:cid/product/:pid  - agrego prod al carrito
 router.post("/:cid/product/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params;
-    const product = await ProductManager.getProductById(parseInt(pid));
+    const product = await productManager.getById(pid);
     if (!product) {
-      return res.status(404).json({ error: "Producto no encontrado" });
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    const updatedCart = await cartsManager.addProductToCart(
-      parseInt(cid),
-      parseInt(pid),
-    );
+    const updatedCart = await cartManager.addProductToCart(cid, pid);
+
     if (!updatedCart) {
-      return res.status(404).json({ error: "Carrito no encontrado" });
+      return res.status(404).json({ message: "Cart not found" });
     }
-    res.status(200).json(updatedCart);
+
+    return res.status(200).json(updatedCart);
   } catch (error) {
-    res.status(500).json({ error: "Error al agregar el producto al carrito" });
+    return res
+      .status(500)
+      .json({ message: "Error agregando producto al carrito" });
   }
 });
-// Ruta para obtener un carrito por su ID
+
+// get /api/carts/:cid  - consulto carrito
 router.get("/:cid", async (req, res) => {
   try {
     const { cid } = req.params;
-    const cart = await cartsManager.getCartById(cid);
+
+    const cart = await cartManager.getById(cid);
+
     if (!cart) {
-      return res.status(404).json({ error: "Carrito no encontrado" });
+      return res.status(404).json({ message: "Cart not found" });
     }
-    res.json(cart.products);
+
+    return res.status(200).json(cart.products);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener el carrito" });
+    return res.status(500).json({ message: "Error leyendo carrito" });
   }
 });
+
 export default router;

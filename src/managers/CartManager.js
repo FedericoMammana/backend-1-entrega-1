@@ -1,71 +1,67 @@
-import e from "express";
-import fs from "fs";
+import fs from "fs/promises";
 
-export class cartManager {
+export class CartManager {
   constructor(path) {
     this.path = path;
   }
-  async getAllCarts() {
-    try {
-      if (fs.existsSync(this.path)) {
-        const data = await fs.promises.readFile(this.path, "utf-8");
-        return JSON.parse(data);
-      } else {
-        return [];
-      }
-    } catch (error) {
-      console.error("Error leyendo carritos:", error);
-      return [];
-    }
+
+  async getAll() {
+    const data = await fs.readFile(this.path, "utf-8");
+    return JSON.parse(data);
   }
-  async getCartById(id) {
-    try {
-      const carts = await this.getAllCarts();
-      return carts.find((cart) => cart.id === id);
-    } catch (error) {
-      return null;
-    }
+
+  async getById(id) {
+    const carts = await this.getAll();
+    return carts.find((c) => c.id === id) || null;
   }
-  async addCart() {
-    try {
-      const carts = await this.getAllCarts();
-      let newId = carts.length;
-      if (carts.length === 0) {
-        newId = 1;
-      } else {
-        newId = carts[carts.length - 1].id + 1;
-      }
-      const newCart = { id: newId, products: [] };
-      carts.push(newCart);
-      await fs.writeFile(this.path, JSON.stringify(carts, null, 2), "utf-8");
-      return newCart;
-    } catch (error) {
-      return [];
+
+  async addProductToCart(cid, pid) {
+    const carts = await this.getAll();
+
+    const cartIndex = carts.findIndex((c) => c.id === cid);
+    if (cartIndex === -1) return null;
+
+    const cart = carts[cartIndex];
+
+    const productIndex = cart.products.findIndex((p) => p.product === pid);
+
+    if (productIndex === -1) {
+      // No existe en el carrito entonces lo agrego por primera vez
+      cart.products.push({
+        product: pid,
+        quantity: 1,
+      });
+    } else {
+      // Ya existe entonces incremento la cant
+      cart.products[productIndex].quantity += 1;
     }
+
+    carts[cartIndex] = cart;
+
+    await fs.writeFile(this.path, JSON.stringify(carts, null, 2), "utf-8");
+
+    return cart;
   }
-  async addProductToCart(cartId, productId) {
-    try {
-      const carts = await this.getAllCarts();
-      const cartIndex = carts.findIndex((cart) => cart.id === cartId);
-      if (cartIndex === -1) {
-        return null;
-      }
-      const cart = carts[cartIndex];
-      const productIndex = cart.products.findIndex(
-        (product) => product.id === productId,
-      );
-      if (productIndex === -1) {
-        cart.products.push({ id: productId, quantity: 1 });
-      } else {
-        // ya existe el producto en el carrito, incrementamos la cantidad
-        cart.products[productIndex].quantity += 1;
-      }
-      carts[cartIndex] = cart;
-      await fs.writeFile(this.path, JSON.stringify(carts, null, 2), "utf-8");
-      return cart;
-    } catch (error) {
-      return null;
-    }
+
+  async create() {
+    const carts = await this.getAll();
+
+    const nextId =
+      carts.length === 0
+        ? "1"
+        : String(Math.max(...carts.map((c) => Number(c.id))) + 1);
+
+    const newCart = {
+      id: nextId,
+      products: [],
+    };
+
+    carts.push(newCart);
+
+    await fs.writeFile(this.path, JSON.stringify(carts, null, 2), "utf-8");
+
+    return newCart;
   }
 }
-export const cartsManager = new cartManager(".data/carts.json");
+
+export const cartManager = new CartManager("./data/carts.json");

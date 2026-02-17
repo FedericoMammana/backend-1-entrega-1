@@ -1,29 +1,38 @@
 import { Router } from "express";
-import { ProductManager } from "../managers/ProductManager.js";
+import { productManager } from "../managers/ProductManager.js";
 
 const router = Router();
-// Ruta para obtener todos los productos
+
+/// GETS ///
+
+// GET /api/products   trae todos los productos
 router.get("/", async (req, res) => {
   try {
-    const products = await productManager.getAllProducts();
-    res.status(200).json(products);
+    const products = await productManager.getAll();
+    return res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener los productos" });
+    return res.status(500).json({ message: "Error leyendo products.json" });
   }
 });
+
+// GET /api/products/:pid -> trae el producto con el id indicado
 router.get("/:pid", async (req, res) => {
   try {
-    const pid = req.params;
-    const product = await productManager.getProductById(pid);
+    const { pid } = req.params;
+    const product = await productManager.getById(pid);
+
     if (!product) {
-      res.status(404).json({ error: "Producto no encontrado" });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
+
     return res.status(200).json(product);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener el producto" });
+    return res.status(500).json({ message: "Error leyendo products.json" });
   }
 });
-// Ruta para agregar un nuevo producto
+
+/// POSTS ///
+// POST /api/products  - creo un nuevo producto y lo devuelvo con su id asignado
 router.post("/", async (req, res) => {
   try {
     const {
@@ -34,20 +43,23 @@ router.post("/", async (req, res) => {
       status,
       stock,
       category,
-      thumbnail,
+      thumbnails,
     } = req.body;
+
     if (
       !title ||
       !description ||
       !code ||
-      !price ||
-      !status ||
-      !stock ||
-      !category
+      price === undefined ||
+      status === undefined ||
+      stock === undefined ||
+      !category ||
+      !thumbnails
     ) {
-      return res.status(400).json({ error: "Faltan campos obligatorios" });
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
-    const newProduct = {
+
+    const newProduct = await productManager.create({
       title,
       description,
       code,
@@ -55,40 +67,49 @@ router.post("/", async (req, res) => {
       status: Boolean(status),
       stock: Number(stock),
       category,
-      thumbnail,
-    };
-    const addedProduct = await productManager.addProduct(newProduct);
-    res.status(201).json(addedProduct);
+      thumbnails,
+    });
+
+    return res.status(201).json(newProduct);
   } catch (error) {
-    res.status(500).json({ error: "Error al agregar el producto" });
+    return res.status(500).json({ message: "Error guardando producto" });
   }
 });
-// Ruta para upgradear un producto existente
+
+/// PUTS ///
+
+// put /api/products/:pid  - actualizo un producto por su id y devuelvo el producto actualizado
+
 router.put("/:pid", async (req, res) => {
   try {
-    const pid = req.params;
-    const updatedData = await productManager.updateProductById(pid, req.body);
-    if (!updatedData) {
-      return res.status(404).json({ error: "Producto no encontrado" });
+    const { pid } = req.params;
+
+    const updatedProduct = await productManager.update(pid, req.body);
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
-    return res.status(200).json(updatedData);
+
+    return res.status(200).json(updatedProduct);
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar el producto" });
+    return res.status(500).json({ message: "Error actualizando producto" });
   }
 });
-// Ruta para eliminar un producto
+
 router.delete("/:pid", async (req, res) => {
   try {
-    const pid = req.params;
-    const deleted = await productManager.deleteProductById(pid);
+    const { pid } = req.params;
+
+    const deleted = await productManager.delete(pid);
+
     if (!deleted) {
-      return res.status(404).json({ error: "Producto no encontrado" });
+      return res.status(404).json({ message: "Product not found" });
     }
-    return res
-      .status(200)
-      .json({ message: "Producto eliminado correctamente" });
+
+    return res.status(200).json({ message: "Product deleted" });
   } catch (error) {
-    res.status(500).json({ error: "Error al eliminar el producto" });
+    return res.status(500).json({ message: "Error eliminando producto" });
   }
 });
+
 export default router;

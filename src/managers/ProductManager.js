@@ -1,90 +1,79 @@
-import fs from "fs";
+import fs from "fs/promises";
 
-class productManager {
+export class ProductManager {
   constructor(path) {
     this.path = path;
   }
 
-  async getAllProducts() {
-    try {
-      if (fs.existsSync(this.path)) {
-        const data = await fs.promises.readFile(this.path, "utf-8");
-        return JSON.parse(data);
-      } else {
-        return [];
-      }
-    } catch (error) {
-      console.error("Error leyendo productos:", error);
-      return [];
-    }
+  async getAll() {
+    const data = await fs.readFile(this.path, "utf-8");
+    return JSON.parse(data);
   }
-  async addProduct(product) {
-    try {
-      const products = await this.getAllProducts();
-      let newId = products.length;
-      if (products.length === 0) {
-        newId = 1;
-      } else {
-        newId = products[products.length - 1].id + 1;
-      }
-      const newProduct = { id: newId, ...product };
-      products.push(newProduct);
-      await fs.writeFile(this.path, JSON.stringify(products, null, 2));
-      return newProduct;
-    } catch (error) {
-      return [];
-    }
+
+  async getById(id) {
+    const products = await this.getAll();
+    return products.find((p) => p.id === id) || null;
   }
-  async getProductById(id) {
-    try {
-      const products = await this.getAllProducts();
-      return products.find((product) => product.id === id);
-    } catch (error) {
-      return null;
-    }
+
+  async create(productData) {
+    const products = await this.getAll();
+
+    const nextId =
+      products.length === 0
+        ? "1"
+        : String(Math.max(...products.map((p) => Number(p.id))) + 1);
+
+    const newProduct = {
+      id: nextId,
+      ...productData,
+    };
+
+    products.push(newProduct);
+
+    await fs.writeFile(this.path, JSON.stringify(products, null, 2), "utf-8");
+
+    return newProduct;
   }
-  async deleteProductById(id) {
-    try {
-      const products = await this.getAllProducts();
-      const updatedProducts = products.filter((product) => product.id !== id);
-      if (updatedProducts.length === products.length) {
-        return null; // No se encontró el producto a eliminar
-      }
-      await fs.writeFile(
-        this.path,
-        JSON.stringify(updatedProducts, null, 2),
-        "utf-8",
-      );
-      return true;
-    } catch (error) {
-      return false;
-    }
+
+  async update(id, updates) {
+    const products = await this.getAll();
+
+    const index = products.findIndex((p) => p.id === id);
+    if (index === -1) return null;
+
+    // No permitir modificar el id
+    const { id: _ignored, ...safeUpdates } = updates;
+
+    const updatedProduct = {
+      ...products[index],
+      ...safeUpdates,
+      id: products[index].id,
+    };
+
+    products[index] = updatedProduct;
+
+    await fs.writeFile(this.path, JSON.stringify(products, null, 2), "utf-8");
+
+    return updatedProduct;
   }
-  async updateProductById(id, updatedFields) {
-    try {
-      const products = await this.getAllProducts();
-      const productIndex = products.findIndex((product) => product.id === id);
-      if (productIndex === -1) {
-        return null; // No se encontró el producto a actualizar
-      }
-      // No permitir modificar el id
-      const { id: _ignored, ...safeUpdates } = updatedFields;
 
-      const updatedProduct = {
-        ...products[productIndex],
-        ...safeUpdates,
-        id: products[productIndex].id,
-      };
+  async delete(id) {
+    const products = await this.getAll();
 
-      products[productIndex] = updatedProduct;
+    const filteredProducts = products.filter((p) => p.id !== id);
 
-      await fs.writeFile(this.path, JSON.stringify(products, null, 2), "utf-8");
-
-      return updatedProduct;
-    } catch (error) {
-      return null;
+    if (filteredProducts.length === products.length) {
+      return null; // No se encontró el producto a eliminar
     }
+
+    await fs.writeFile(
+      this.path,
+      JSON.stringify(filteredProducts, null, 2),
+      "utf-8",
+    );
+
+    return true;
   }
 }
 
-export const ProductManager = new productManager("./data/products.json");
+export const productManager = new ProductManager("./data/products.json");
