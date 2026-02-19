@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { cartManager } from "../managers/CartManager.js";
-import { productManager } from "../managers/ProductManager.js";
+import { productManager } from "../managers/productManager.js";
 const router = Router();
 
 /// POSTS
@@ -39,7 +39,17 @@ router.post("/:cid/product/:pid", async (req, res) => {
 
 /// GETS
 
-// get /api/carts/:cid  - consulto carrito
+// GET /api/carts - trae todos los carritos
+router.get("/", async (req, res) => {
+  try {
+    const carts = await cartManager.getAllCarts();
+    return res.status(200).json(carts);
+  } catch (error) {
+    return res.status(500).json({ message: "Error leyendo carritos" });
+  }
+});
+
+// GET /api/carts/:cid - consulto un carrito por id
 router.get("/:cid", async (req, res) => {
   try {
     const { cid } = req.params;

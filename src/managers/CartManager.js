@@ -12,7 +12,7 @@ export class CartManager {
 
   async getById(id) {
     const carts = await this.getAllCarts();
-    return carts.find((c) => c.id === id) || null;
+    return carts.find((c) => String(c.id) === String(id)) || null;
   }
   /// Creando Carrito y Agregando Productos al Carrito ///
 
@@ -40,12 +40,14 @@ export class CartManager {
   async addProductToCart(cid, pid) {
     const carts = await this.getAllCarts();
 
-    const cartIndex = carts.findIndex((c) => c.id === cid);
+    const cartIndex = carts.findIndex((c) => String(c.id) === String(cid));
     if (cartIndex === -1) return null;
 
     const cart = carts[cartIndex];
 
-    const productIndex = cart.products.findIndex((p) => p.product === pid);
+    const productIndex = cart.products.findIndex(
+      (p) => String(p.product) === String(pid)
+    );
 
     if (productIndex === -1) {
       // No existe el producto en el carrito, lo agrego con cantidad 1

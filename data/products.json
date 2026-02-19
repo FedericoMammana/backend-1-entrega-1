@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": "1",
     "title": "Producto de prueba",
     "description": "Descripción del producto",
     "code": "ABC123",
@@ -8,6 +8,21 @@
     "status": true,
     "stock": 10,
     "category": "categoria",
-    "thumbnails": ["https://ejemplo.com/imagen.jpg"]
+    "thumbnails": [
+      "https://ejemplo.com/imagen.jpg"
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Producto 2 modificado",
+    "description": "Descripción del producto",
+    "code": "ABC123",
+    "price": 1500,
+    "status": true,
+    "stock": 10,
+    "category": "categoria nueva",
+    "thumbnails": [
+      "https://ejemplo.com/imagen2.jpg"
+    ]
   }
 ]

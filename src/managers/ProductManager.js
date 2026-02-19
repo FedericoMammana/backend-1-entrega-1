@@ -5,18 +5,19 @@ export class ProductManager {
     this.path = path;
   }
 
-  async getAllProducts() {
+  async getAll() {
     const data = await fs.readFile(this.path, "utf-8");
     return JSON.parse(data);
   }
 
   async getById(id) {
-    const products = await this.getAllProducts();
-    return products.find((p) => p.id === id) || null;
+    const products = await this.getAll();
+    // Comparo como string para evitar problemas entre IDs numéricos y de texto
+    return products.find((p) => String(p.id) === String(id)) || null;
   }
 
   async createProduct(productData) {
-    const products = await this.getAllProducts();
+    const products = await this.getAll();
 
     const newId =
       products.length === 0
@@ -36,12 +37,11 @@ export class ProductManager {
   }
 
   async updateProduct(id, updates) {
-    const products = await this.getAllProducts();
+    const products = await this.getAll();
 
-    const index = products.findIndex((p) => p.id === id);
+    const index = products.findIndex((p) => String(p.id) === String(id));
     if (index === -1) return null;
 
-    // Sin modificar el ID, para evitar que se cambie por error
     const { id: _ignored, ...safeUpdates } = updates;
 
     const updatedProduct = {
@@ -57,10 +57,12 @@ export class ProductManager {
     return updatedProduct;
   }
 
-  async delete(id) {
+  async deleteProduct(id) {
     const products = await this.getAll();
 
-    const filteredProducts = products.filter((p) => p.id !== id);
+    const filteredProducts = products.filter(
+      (p) => String(p.id) !== String(id),
+    );
 
     if (filteredProducts.length === products.length) {
       return null; // No se encontró el producto a eliminar
