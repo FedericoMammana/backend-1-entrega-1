@@ -71,6 +71,12 @@ router.post("/", async (req, res) => {
       thumbnails,
     });
 
+    const io = req.app.get("io");
+    if (io) {
+      const products = await productManager.getAll();
+      io.emit("productList", products);
+    }
+
     return res.status(201).json(newProduct);
   } catch (error) {
     return res.status(500).json({ message: "Error guardando producto" });
@@ -107,6 +113,12 @@ router.delete("/:pid", async (req, res) => {
 
     if (!deleted) {
       return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    const io = req.app.get("io");
+    if (io) {
+      const products = await productManager.getAll();
+      io.emit("productList", products);
     }
 
     return res.status(200).json({ message: "Producto eliminado" });

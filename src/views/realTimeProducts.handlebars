@@ -1,0 +1,126 @@
+<h1>Productos en tiempo real</h1>
+
+{{#if error}}
+  <p class="error">{{error}}</p>
+{{/if}}
+
+<form id="formAddProduct">
+  <h3>Agregar producto</h3>
+  <input name="title" placeholder="Título" required />
+  <input name="description" placeholder="Descripción" required />
+  <input name="code" placeholder="Código" required />
+  <input name="price" type="number" step="0.01" placeholder="Precio" required />
+  <input name="stock" type="number" placeholder="Stock" required />
+  <input name="category" placeholder="Categoría" required />
+  <label>Estado activo <input name="status" type="checkbox" checked /></label>
+  <input name="thumbnails" placeholder="URL imagen (opcional)" />
+  <button type="submit">Crear producto</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Descripción</th>
+      <th>Código</th>
+      <th>Precio</th>
+      <th>Stock</th>
+      <th>Categoría</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="productList">
+    {{#each products}}
+      <tr data-id="{{this.id}}">
+        <td>{{this.id}}</td>
+        <td>{{this.title}}</td>
+        <td>{{this.description}}</td>
+        <td>{{this.code}}</td>
+        <td>{{this.price}}</td>
+        <td>{{this.stock}}</td>
+        <td>{{this.category}}</td>
+        <td><button type="button" class="danger btnDelete" data-id="{{this.id}}">Eliminar</button></td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+<p id="emptyMsg" style="display: {{#if products.length}}none{{else}}block{{/if}};">No hay productos cargados.</p>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  socket.on("productList", (products) => {
+    const tbody = document.getElementById("productList");
+    const emptyMsg = document.getElementById("emptyMsg");
+    tbody.innerHTML = "";
+    if (products.length === 0) {
+      emptyMsg.style.display = "block";
+      return;
+    }
+    emptyMsg.style.display = "none";
+    products.forEach((p) => {
+      const tr = document.createElement("tr");
+      tr.dataset.id = p.id;
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.title}</td>
+        <td>${p.description}</td>
+        <td>${p.code}</td>
+        <td>${p.price}</td>
+        <td>${p.stock}</td>
+        <td>${p.category}</td>
+        <td><button type="button" class="danger btnDelete" data-id="${p.id}">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.querySelectorAll(".btnDelete").forEach((btn) => {
+      btn.addEventListener("click", () => deleteProduct(btn.dataset.id));
+    });
+  });
+
+  document.getElementById("formAddProduct").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const thumbnails = form.thumbnails.value.trim() ? [form.thumbnails.value.trim()] : [];
+    const body = {
+      title: form.title.value,
+      description: form.description.value,
+      code: form.code.value,
+      price: Number(form.price.value),
+      status: form.status.checked,
+      stock: Number(form.stock.value),
+      category: form.category.value,
+      thumbnails,
+    };
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.message || "Error al crear producto");
+        return;
+      }
+      form.reset();
+    } catch (err) {
+      alert("Error de conexión");
+    }
+  });
+
+  async function deleteProduct(id) {
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      if (!res.ok) alert("Error al eliminar");
+    } catch (err) {
+      alert("Error de conexión");
+    }
+  }
+
+  document.querySelectorAll(".btnDelete").forEach((btn) => {
+    btn.addEventListener("click", () => deleteProduct(btn.dataset.id));
+  });
+</script>
