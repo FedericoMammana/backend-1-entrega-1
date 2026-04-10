@@ -1,10 +1,35 @@
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title> Entrega-2</title>
-  </head>
-  <body>
-    {{{body}}}
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{#if title}}{{title}} — {{/if}}Entrega</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 0 auto; padding: 1rem; }
+    nav { margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    nav a { margin-right: 1rem; color: #2563eb; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: #f8fafc; }
+    .pagination { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
+    .btn { display: inline-block; padding: 0.35rem 0.75rem; background: #2563eb; color: #fff; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; }
+    .btn.secondary { background: #64748b; }
+    .btn.danger { background: #dc2626; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .filters { background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .filters label { margin-right: 0.5rem; }
+    .product-row { vertical-align: middle; }
+    .muted { color: #64748b; font-size: 0.9rem; }
+    .error { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/products">Productos</a>
+    <a href="/realtimeproducts">Tiempo real</a>
+  </nav>
+  {{{body}}}
+</body>
 </html>

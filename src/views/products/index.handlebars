@@ -1,0 +1,93 @@
+<h1>Catálogo de productos</h1>
+{{#unless cartId}}
+  <p class="error">No hay carrito en la base. Ejecutá <code>npm run seed</code> o <code>POST /api/carts</code> y pegá el <code>cartId</code> (ObjectId) aquí abajo.</p>
+{{/unless}}
+
+<div class="filters">
+  <form method="get" action="/products">
+    <p class="muted">Filtro <code>query</code>: búsqueda general, o <code>category:nombre</code>, o <code>availability:true|false</code></p>
+    <label>Query <input type="text" name="query" value="{{currentQuery}}" placeholder="ej: category:categoria" style="width:220px" /></label>
+    <label>Orden precio
+      <select name="sort">
+        <option value="" {{#if sortNone}}selected{{/if}}>Sin orden</option>
+        <option value="asc" {{#if sortAsc}}selected{{/if}}>Ascendente</option>
+        <option value="desc" {{#if sortDesc}}selected{{/if}}>Descendente</option>
+      </select>
+    </label>
+    <label>Límite <input type="number" name="limit" min="1" value="{{currentLimit}}" style="width:4rem" /></label>
+    <label>Carrito (id) <input type="text" name="cartId" value="{{cartId}}" style="width:3rem" /></label>
+    <input type="hidden" name="page" value="1" />
+    <button type="submit" class="btn">Aplicar</button>
+  </form>
+</div>
+
+<p class="muted">Página {{page}} de {{totalPages}} ({{total}} productos con filtros actuales)</p>
+
+<div class="pagination">
+  {{#if hasPrevPage}}
+    <a class="btn secondary" href="{{prevLink}}">← Anterior</a>
+  {{else}}
+    <span class="btn secondary" style="pointer-events:none;opacity:.5">← Anterior</span>
+  {{/if}}
+  {{#if hasNextPage}}
+    <a class="btn secondary" href="{{nextLink}}">Siguiente →</a>
+  {{else}}
+    <span class="btn secondary" style="pointer-events:none;opacity:.5">Siguiente →</span>
+  {{/if}}
+  <a class="btn" href="/carts/{{cartId}}">Ver carrito {{cartId}}</a>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Precio</th>
+      <th>Categoría</th>
+      <th>Stock</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each products}}
+      <tr class="product-row">
+        <td>{{this.id}}</td>
+        <td><a href="/products/{{this.id}}?cartId={{../cartId}}">{{this.title}}</a></td>
+        <td>{{this.price}}</td>
+        <td>{{this.category}}</td>
+        <td>{{this.stock}}</td>
+        <td>
+          <button type="button" class="btn add-to-cart" data-pid="{{this.id}}">Agregar al carrito</button>
+        </td>
+      </tr>
+    {{else}}
+      <tr><td colspan="6">No hay productos en esta página.</td></tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<script>
+  (function () {
+    const cartId = "{{cartId}}";
+    document.querySelectorAll(".add-to-cart").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!cartId) {
+          alert("Definí un cartId (ObjectId). Podés crear uno con POST /api/carts o npm run seed.");
+          return;
+        }
+        const pid = btn.getAttribute("data-pid");
+        try {
+          const res = await fetch(`/api/carts/${cartId}/product/${pid}`, { method: "POST" });
+          if (!res.ok) {
+            const d = await res.json().catch(() => ({}));
+            alert(d.message || "Error al agregar");
+            return;
+          }
+          alert("Producto agregado al carrito " + cartId);
+        } catch (e) {
+          alert("Error de red");
+        }
+      });
+    });
+  })();
+</script>

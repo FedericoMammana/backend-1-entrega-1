@@ -1,0 +1,41 @@
+{{#if error}}
+  <p class="error">{{error}}</p>
+  <p><a href="/products">Volver al catálogo</a></p>
+{{else}}
+  <p><a href="/products?cartId={{cartId}}">← Volver al catálogo</a></p>
+  <h1>{{product.title}}</h1>
+  <p class="muted">ID: {{product.id}} · Código: {{product.code}}</p>
+  <p><strong>Precio:</strong> {{product.price}}</p>
+  <p><strong>Categoría:</strong> {{product.category}}</p>
+  <p><strong>Stock:</strong> {{product.stock}}</p>
+  <p><strong>Estado:</strong> {{#if product.status}}Activo{{else}}Inactivo{{/if}}</p>
+  <p><strong>Descripción:</strong></p>
+  <p>{{product.description}}</p>
+  {{#if product.thumbnails.length}}
+    <p><strong>Imágenes:</strong></p>
+    <ul>
+      {{#each product.thumbnails}}
+        <li><a href="{{this}}" target="_blank" rel="noopener">{{this}}</a></li>
+      {{/each}}
+    </ul>
+  {{/if}}
+  <p>
+    <button type="button" class="btn" id="btnAddCart">Agregar al carrito</button>
+    <a class="btn secondary" href="/carts/{{cartId}}">Ver carrito {{cartId}}</a>
+  </p>
+  <script>
+    document.getElementById("btnAddCart").addEventListener("click", async function () {
+      try {
+        const res = await fetch("/api/carts/{{cartId}}/product/{{product.id}}", { method: "POST" });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          alert(d.message || "Error");
+          return;
+        }
+        alert("Agregado al carrito " + "{{cartId}}");
+      } catch (e) {
+        alert("Error de red");
+      }
+    });
+  </script>
+{{/if}}

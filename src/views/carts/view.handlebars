@@ -1,0 +1,38 @@
+{{#if error}}
+  <p class="error">{{error}}</p>
+  <p><a href="/products">Ir al catálogo</a></p>
+{{else}}
+  <h1>Carrito {{cart.id}}</h1>
+  {{#if cart.products.length}}
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Categoría</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each cart.products}}
+          <tr>
+            <td>
+              {{#if this.product}}
+                <a href="/products/{{this.product.id}}?cartId={{../cart.id}}">{{this.product.title}}</a>
+                <span class="muted">(id {{this.product.id}})</span>
+              {{else}}
+                <span class="muted">Producto eliminado (ref. {{this.productId}})</span>
+              {{/if}}
+            </td>
+            <td>{{#if this.product}}{{this.product.price}}{{else}}—{{/if}}</td>
+            <td>{{#if this.product}}{{this.product.category}}{{else}}—{{/if}}</td>
+            <td>{{this.quantity}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p>El carrito está vacío.</p>
+  {{/if}}
+  <p><a href="/products?cartId={{cart.id}}">Seguir comprando</a></p>
+{{/if}}

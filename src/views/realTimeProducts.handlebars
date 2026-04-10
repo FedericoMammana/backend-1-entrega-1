@@ -83,7 +83,9 @@
   document.getElementById("formAddProduct").addEventListener("submit", async (e) => {
     e.preventDefault();
     const form = e.target;
-    const thumbnails = form.thumbnails.value.trim() ? [form.thumbnails.value.trim()] : [];
+    const thumbnails = form.thumbnails.value.trim()
+      ? [form.thumbnails.value.trim()]
+      : ["https://via.placeholder.com/150"];
     const body = {
       title: form.title.value,
       description: form.description.value,
